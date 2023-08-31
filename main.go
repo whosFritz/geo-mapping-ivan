@@ -40,7 +40,7 @@ func init() {
 }
 
 func main() {
-	err := godotenv.Load("ivan.env")
+	err := godotenv.Load("./ivan.env")
 	if err != nil {
 		log.Fatalf("Some error occured. Err: %s", err)
 	}
@@ -70,6 +70,7 @@ func main() {
 		select {
 		case event := <-watcher.Events:
 			// Check if the event is a modification
+			fmt.Println("Event:", event)
 			if event.Op&fsnotify.Write == fsnotify.Write {
 				readLastLine(filePath, token)
 			}
@@ -147,7 +148,7 @@ func recordMetrics(geoData GeoData, username string, ip string) {
 	failedLogins.With(prometheus.Labels{
 		"ip":        ip,
 		"username":  username,
-		"country":   geoData.Country.ISOCode,
+		"country":   geoData.Country.Name["en"],
 		"city":      geoData.City.Names["en"],
 		"continent": geoData.Continent.Code,
 		"latitude":  fmt.Sprintf("%.6f", geoData.Location.Latitude),
