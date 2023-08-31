@@ -40,6 +40,12 @@
       "id": "prometheus",
       "name": "Prometheus",
       "version": "1.0.0"
+    },
+    {
+      "type": "panel",
+      "id": "stat",
+      "name": "Stat",
+      "version": ""
     }
   ],
   "annotations": {
@@ -76,7 +82,6 @@
             "mode": "continuous-GrYlRd"
           },
           "mappings": [],
-          "max": 100,
           "min": 1,
           "thresholds": {
             "mode": "absolute",
@@ -91,8 +96,8 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 12,
-        "w": 8,
+        "h": 9,
+        "w": 12,
         "x": 0,
         "y": 0
       },
@@ -103,7 +108,9 @@
         "minVizWidth": 0,
         "orientation": "horizontal",
         "reduceOptions": {
-          "calcs": [],
+          "calcs": [
+            "last"
+          ],
           "fields": "",
           "values": true
         },
@@ -139,19 +146,18 @@
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
       },
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "continuous-GrYlRd"
+            "mode": "thresholds"
           },
           "mappings": [],
-          "max": 100,
-          "min": 1,
           "thresholds": {
-            "mode": "absolute",
+            "mode": "percentage",
             "steps": [
               {
-                "color": "green",
+                "color": "dark-red",
                 "value": null
               }
             ]
@@ -160,24 +166,25 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 12,
-        "w": 8,
-        "x": 8,
+        "h": 18,
+        "w": 3,
+        "x": 12,
         "y": 0
       },
-      "id": 4,
+      "id": 6,
       "options": {
-        "displayMode": "lcd",
-        "minVizHeight": 1,
-        "minVizWidth": 0,
-        "orientation": "horizontal",
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "vertical",
         "reduceOptions": {
-          "calcs": [],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
-          "values": true
+          "values": false
         },
-        "showUnfilled": true,
-        "valueMode": "color"
+        "textMode": "auto"
       },
       "pluginVersion": "10.1.0",
       "targets": [
@@ -186,22 +193,19 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "disableTextWrap": false,
-          "editorMode": "builder",
+          "editorMode": "code",
           "exemplar": false,
-          "expr": "topk(10, sum by(country) (failed_logins_total))",
-          "format": "table",
-          "fullMetaSearch": false,
-          "includeNullMetadata": true,
+          "expr": "sum(failed_logins_total)",
+          "format": "time_series",
           "instant": true,
+          "interval": "",
           "legendFormat": "__auto",
           "range": false,
-          "refId": "A",
-          "useBackend": false
+          "refId": "A"
         }
       ],
-      "title": "Countries Top 5",
-      "type": "bargauge"
+      "title": "Failed Logins",
+      "type": "stat"
     },
     {
       "datasource": {
@@ -225,9 +229,9 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 12,
-        "w": 8,
-        "x": 16,
+        "h": 18,
+        "w": 9,
+        "x": 15,
         "y": 0
       },
       "id": 1,
@@ -286,6 +290,74 @@
       "fieldConfig": {
         "defaults": {
           "color": {
+            "mode": "continuous-GrYlRd"
+          },
+          "mappings": [],
+          "min": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 9
+      },
+      "id": 4,
+      "options": {
+        "displayMode": "lcd",
+        "minVizHeight": 1,
+        "minVizWidth": 0,
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [],
+          "fields": "",
+          "values": true
+        },
+        "showUnfilled": true,
+        "valueMode": "color"
+      },
+      "pluginVersion": "10.1.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "disableTextWrap": false,
+          "editorMode": "builder",
+          "exemplar": false,
+          "expr": "topk(10, sum by(country) (failed_logins_total))",
+          "format": "table",
+          "fullMetaSearch": false,
+          "includeNullMetadata": true,
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "A",
+          "useBackend": false
+        }
+      ],
+      "title": "Countries Top 5",
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
             "mode": "thresholds"
           },
           "custom": {
@@ -318,7 +390,7 @@
         "h": 21,
         "w": 20,
         "x": 0,
-        "y": 12
+        "y": 18
       },
       "id": 2,
       "options": {
@@ -405,13 +477,13 @@
     "list": []
   },
   "time": {
-    "from": "now-90d",
+    "from": "now-24h",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "Geo-Mapping-ivan",
   "uid": "d1a823bd-fd8a-418c-acda-da1f23611ca3",
-  "version": 21,
+  "version": 25,
   "weekStart": ""
 }
