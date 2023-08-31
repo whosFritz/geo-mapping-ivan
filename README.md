@@ -45,7 +45,7 @@ Your contributions are greatly appreciated! :rocket:
    go get -u github.com/prometheus/client_golang/prometheus
    go get -u github.com/prometheus/client_golang/prometheus/promhttp
    ```
-3. Create a .env file in the project directory and add your API token :key:	
+3. Create a .env file in the project directory (recommended if u contribute to this project) and add your API token :key:	
 
    - you can get an api token from [here](https://www.findip.net/)
    - TOKEN=your_api_token_here
