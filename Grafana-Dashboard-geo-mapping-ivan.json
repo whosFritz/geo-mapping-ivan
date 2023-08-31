@@ -13,8 +13,8 @@
   "__requires": [
     {
       "type": "panel",
-      "id": "barchart",
-      "name": "Bar chart",
+      "id": "bargauge",
+      "name": "Bar gauge",
       "version": ""
     },
     {
@@ -73,39 +73,17 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "fillOpacity": 80,
-            "gradientMode": "hue",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineWidth": 1,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
+            "mode": "continuous-GrYlRd"
           },
           "mappings": [],
+          "max": 100,
+          "min": 1,
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
                 "color": "green",
                 "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
               }
             ]
           }
@@ -118,29 +96,21 @@
         "x": 0,
         "y": 0
       },
-      "id": 3,
+      "id": 4,
       "options": {
-        "barRadius": 0,
-        "barWidth": 0.97,
-        "fullHighlight": false,
-        "groupWidth": 0.7,
-        "legend": {
+        "displayMode": "lcd",
+        "minVizHeight": 1,
+        "minVizWidth": 0,
+        "orientation": "horizontal",
+        "reduceOptions": {
           "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
+          "fields": "",
+          "values": true
         },
-        "orientation": "auto",
-        "showValue": "auto",
-        "stacking": "none",
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        },
-        "xField": "country",
-        "xTickLabelRotation": 0,
-        "xTickLabelSpacing": 0
+        "showUnfilled": true,
+        "valueMode": "color"
       },
+      "pluginVersion": "10.1.0",
       "targets": [
         {
           "datasource": {
@@ -150,7 +120,7 @@
           "disableTextWrap": false,
           "editorMode": "builder",
           "exemplar": false,
-          "expr": "topk(5, sum by(country) (failed_logins_total))",
+          "expr": "topk(10, sum by(country) (failed_logins_total))",
           "format": "table",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
@@ -162,7 +132,7 @@
         }
       ],
       "title": "Countries Top 5",
-      "type": "barchart"
+      "type": "bargauge"
     },
     {
       "datasource": {
@@ -272,8 +242,8 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 20,
-        "w": 17,
+        "h": 21,
+        "w": 20,
         "x": 0,
         "y": 10
       },
@@ -370,13 +340,13 @@
     "list": []
   },
   "time": {
-    "from": "now-6h",
+    "from": "now-90d",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "Geo-Mapping-ivan",
   "uid": "d1a823bd-fd8a-418c-acda-da1f23611ca3",
-  "version": 10,
+  "version": 16,
   "weekStart": ""
 }
