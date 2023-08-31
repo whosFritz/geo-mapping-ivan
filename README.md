@@ -1,4 +1,5 @@
-# Log Data Collection and Visualization :bar_chart:
+# GEO MAPPING IVAN :bearded_person:
+## Log Data Collection and Visualization :bar_chart:
 
 This project aims to collect log data from the `/var/log/auth.log` file, extract IP addresses and usernames from failed login attempts, and use API calls to get geographical data such as longitude, latitude, city, country, and more. The collected data is then recorded as Prometheus metrics and can be visualized using Grafana.
 
