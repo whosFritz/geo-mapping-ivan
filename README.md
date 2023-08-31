@@ -5,6 +5,7 @@ This project aims to collect log data from the `/var/log/auth.log` file, extract
 
 ## Grafana Dashboard to use it urself
 - [Geo-Mapping-Ivan on Grafana Labs](https://grafana.com/grafana/dashboards/19450-geo-mapping-ivan/)
+- I will try to regulary update the json file on grafana labs and here in the src code :grin:	
 
 ## Contribute
 
@@ -128,7 +129,7 @@ To ensure that the `geo-mapping-ivan` application runs continuously and starts a
    Now your application will run as a systemd service, ensuring its continuous operation and automatic start at system boot.
 
 ## Grafana Dashboard :chart_with_upwards_trend:
-A sample Grafana dashboard JSON file is provided in the grafana_dashboard.json file. You can import this dashboard into Grafana to visualize the recorded metrics. The dashboard will display information about failed login attempts, including IP addresses, usernames, geographical data, and more.
+A sample Grafana dashboard JSON file is provided in the [Grafana-Dashboard-geo-mapping-ivan.json](Grafana-Dashboard-geo-mapping-ivan.json) file. You can import this dashboard into Grafana to visualize the recorded metrics. The dashboard will display information about failed login attempts, including IP addresses, usernames, geographical data, and more.
 
 ## Customize :hammer_and_wrench:
 Feel free to customize the code and the Grafana dashboard to fit your needs. You can modify the Prometheus metrics, add more labels, or create new visualizations in Grafana to gain insights from the collected data.
