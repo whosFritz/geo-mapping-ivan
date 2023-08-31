@@ -91,9 +91,78 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 10,
-        "w": 17,
+        "h": 12,
+        "w": 8,
         "x": 0,
+        "y": 0
+      },
+      "id": 5,
+      "options": {
+        "displayMode": "lcd",
+        "minVizHeight": 1,
+        "minVizWidth": 0,
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [],
+          "fields": "",
+          "values": true
+        },
+        "showUnfilled": true,
+        "valueMode": "color"
+      },
+      "pluginVersion": "10.1.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "disableTextWrap": false,
+          "editorMode": "builder",
+          "exemplar": false,
+          "expr": "topk(10, sum by(city) (failed_logins_total))",
+          "format": "table",
+          "fullMetaSearch": false,
+          "includeNullMetadata": true,
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "A",
+          "useBackend": false
+        }
+      ],
+      "title": "Cities Top 10",
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-GrYlRd"
+          },
+          "mappings": [],
+          "max": 100,
+          "min": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 8,
+        "x": 8,
         "y": 0
       },
       "id": 4,
@@ -156,9 +225,9 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 10,
-        "w": 7,
-        "x": 17,
+        "h": 12,
+        "w": 8,
+        "x": 16,
         "y": 0
       },
       "id": 1,
@@ -169,11 +238,15 @@
           "showLegend": true,
           "sortBy": "Value",
           "sortDesc": true,
-          "values": ["value"]
+          "values": [
+            "value"
+          ]
         },
         "pieType": "donut",
         "reduceOptions": {
-          "calcs": ["lastNotNull"],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
@@ -189,9 +262,9 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "disableTextWrap": false,
-          "editorMode": "code",
+          "editorMode": "builder",
           "exemplar": false,
-          "expr": "topk(5, sum by(username) (failed_logins_total))",
+          "expr": "topk(15, sum by(username) (failed_logins_total))",
           "format": "time_series",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
@@ -202,7 +275,7 @@
           "useBackend": false
         }
       ],
-      "title": "Tried Usernames Top 5",
+      "title": "Tried Usernames Top 15",
       "type": "piechart"
     },
     {
@@ -245,7 +318,7 @@
         "h": 21,
         "w": 20,
         "x": 0,
-        "y": 10
+        "y": 12
       },
       "id": 2,
       "options": {
@@ -265,39 +338,20 @@
         "layers": [
           {
             "config": {
-              "showLegend": false,
-              "style": {
-                "color": {
-                  "fixed": "dark-green"
-                },
-                "opacity": 0.4,
-                "rotation": {
-                  "fixed": 0,
-                  "max": 360,
-                  "min": -360,
-                  "mode": "mod"
-                },
-                "size": {
-                  "fixed": 5,
-                  "max": 15,
-                  "min": 2
-                },
-                "symbol": {
-                  "fixed": "img/icons/marker/circle.svg",
-                  "mode": "fixed"
-                },
-                "textConfig": {
-                  "fontSize": 12,
-                  "offsetX": 0,
-                  "offsetY": 0,
-                  "textAlign": "center",
-                  "textBaseline": "middle"
-                }
+              "blur": 15,
+              "radius": 5,
+              "weight": {
+                "fixed": 1,
+                "max": 1,
+                "min": 0
               }
+            },
+            "location": {
+              "mode": "auto"
             },
             "name": "Where is Ivan",
             "tooltip": true,
-            "type": "markers"
+            "type": "heatmap"
           }
         ],
         "tooltip": {
@@ -326,6 +380,17 @@
           "legendFormat": "__auto",
           "range": false,
           "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "",
+          "hide": false,
+          "instant": false,
+          "range": true,
+          "refId": "B"
         }
       ],
       "title": "Where is Ivan hiding",
@@ -347,6 +412,6 @@
   "timezone": "",
   "title": "Geo-Mapping-ivan",
   "uid": "d1a823bd-fd8a-418c-acda-da1f23611ca3",
-  "version": 16,
+  "version": 21,
   "weekStart": ""
 }
