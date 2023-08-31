@@ -4,7 +4,7 @@
 This project aims to collect log data from the `/var/log/auth.log` file, extract IP addresses and usernames from failed login attempts, and use API calls to get geographical data such as longitude, latitude, city, country, and more. The collected data is then recorded as Prometheus metrics and can be visualized using Grafana.
 
 ## Grafana Dashboard to use it urself
-- [Geo-Mapping-Ivan on Grafana Labs](https://grafana.com/grafana/dashboards/19450)
+- [Geo-Mapping-Ivan on Grafana Labs](https://grafana.com/grafana/dashboards/19450-geo-mapping-ivan/)
 
 ## Contribute
 
