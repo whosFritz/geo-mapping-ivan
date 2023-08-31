@@ -46,7 +46,7 @@ func main() {
 	}
 	token := os.Getenv("TOKEN")
 	// Specify the file path you want to monitor
-	filePath := "log.txt"
+	filePath := "./auth.log"
 
 	// Create a new watcher instance
 	watcher, err := fsnotify.NewWatcher()
