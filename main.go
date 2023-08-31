@@ -96,10 +96,10 @@ func readLastLine(filePath string, token string) {
 
 	if strings.Contains(lastLine, "Failed password for") {
 		username, ip := extractIP(lastLine)
-		geoData := getGeoData(ip, token)
+		ivan := getIvan(ip, token)
 		// printf statement to print username ip and Country name
-		fmt.Printf("Username: %s, IP: %s, Country: %s\n", username, ip, geoData.Country.Name["en"])
-		recordMetrics(geoData, username, ip) // Record metrics for Prometheus
+		fmt.Printf("Username: %s, IP: %s, Country: %s\n", username, ip, ivan.Country.Name["en"])
+		recordMetrics(ivan, username, ip) // Record metrics for Prometheus
 
 	}
 
@@ -117,12 +117,12 @@ func extractIP(line string) (string, string) {
 	return parts[8], parts[10]
 }
 
-func getGeoData(ip string, token string) GeoData {
+func getIvan(ip string, token string) Ivan {
 	url := "https://api.findip.net/" + ip + "/?token=" + token
 	response, err := http.Get(url)
 	if err != nil {
 		fmt.Println("Error making GET request:", err)
-		return GeoData{}
+		return Ivan{}
 	}
 	defer response.Body.Close()
 
@@ -130,35 +130,35 @@ func getGeoData(ip string, token string) GeoData {
 	responseBody, err := io.ReadAll(response.Body)
 	if err != nil {
 		fmt.Println("Error reading response body:", err)
-		return GeoData{}
+		return Ivan{}
 	}
 
-	var geoData GeoData
+	var ivan Ivan
 
-	err = json.Unmarshal(responseBody, &geoData)
+	err = json.Unmarshal(responseBody, &ivan)
 	if err != nil {
 		fmt.Println("Error unmarshalling JSON:", err)
-		return GeoData{}
+		return Ivan{}
 	}
 
-	return geoData
+	return ivan
 }
 
-func recordMetrics(geoData GeoData, username string, ip string) {
+func recordMetrics(ivan Ivan, username string, ip string) {
 	failedLogins.With(prometheus.Labels{
 		"ip":        ip,
 		"username":  username,
-		"country":   geoData.Country.Name["en"],
-		"city":      geoData.City.Names["en"],
-		"continent": geoData.Continent.Code,
-		"latitude":  fmt.Sprintf("%.6f", geoData.Location.Latitude),
-		"longitude": fmt.Sprintf("%.6f", geoData.Location.Longitude),
-		"postal":    geoData.Postal.Code,
-		"isp":       geoData.Traits.ISP,
+		"country":   ivan.Country.Name["en"],
+		"city":      ivan.City.Names["en"],
+		"continent": ivan.Continent.Code,
+		"latitude":  fmt.Sprintf("%.6f", ivan.Location.Latitude),
+		"longitude": fmt.Sprintf("%.6f", ivan.Location.Longitude),
+		"postal":    ivan.Postal.Code,
+		"isp":       ivan.Traits.ISP,
 	}).Inc()
 }
 
-type GeoData struct {
+type Ivan struct {
 	Country   Country   `json:"country"`
 	City      City      `json:"city"`
 	Continent Continent `json:"continent"`
