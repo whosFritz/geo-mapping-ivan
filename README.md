@@ -1,4 +1,4 @@
-# GEO MAPPING IVAN :bearded_person:
+# GEO MAPPING IVAN :bearded_person: :world_map:	
 ## Log Data Collection and Visualization :bar_chart:
 
 This project aims to collect log data from the `/var/log/auth.log` file, extract IP addresses and usernames from failed login attempts, and use API calls to get geographical data such as longitude, latitude, city, country, and more. The collected data is then recorded as Prometheus metrics and can be visualized using Grafana.
@@ -42,7 +42,7 @@ Your contributions are greatly appreciated! :rocket:
    go get -u github.com/prometheus/client_golang/prometheus
    go get -u github.com/prometheus/client_golang/prometheus/promhttp
    ```
-3. Create a .env file in the project directory and add your API token:
+3. Create a .env file in the project directory and add your API token :key:	
 
    - you can get an api token from [here](https://www.findip.net/)
    - TOKEN=your_api_token_here
@@ -76,11 +76,11 @@ Your contributions are greatly appreciated! :rocket:
    ./geo-mapping-van
    ```
 
-   The application will monitor changes to the /var/log/auth.log file and extract data from failed login attempts. It will then record the data as Prometheus metrics.
+   The application will monitor changes to the /var/log/auth.log file and extract data from failed login attempts. It will then record the data as Prometheus metrics. :timer_clock:	
 
 4. Start Grafana and set up Prometheus as a data source.
 
-5. Import the provided Grafana dashboard to visualize the recorded metrics.
+5. Import the provided Grafana dashboard to visualize the recorded metrics. :white_check_mark:	
 
 ## Creating a System Service File :gear:
 
@@ -108,7 +108,7 @@ To ensure that the `geo-mapping-ivan` application runs continuously and starts a
    
    Replace /path/to/geo-mapping-ivan with the actual path to your geo-mapping-ivan executable and project directory. Also, replace your_username with your actual username.
 
-3. Save the file and exit the text editor
+3. Save the file and exit the text editor :floppy_disk:	
 4. Start and enable the service
    ```bash
    sudo systemctl start geo-mapping-ivan
