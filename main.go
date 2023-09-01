@@ -2,15 +2,14 @@ package main
 
 import (
 	"bufio"
-	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"os"
 	"strings"
 
 	"github.com/fsnotify/fsnotify"
+	ipdata "github.com/ipdata/go"
 	"github.com/joho/godotenv"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
@@ -24,13 +23,20 @@ var (
 	}, []string{
 		"ip",
 		"username",
-		"country",
 		"city",
+		"region",
+		"region_code",
+		"country",
+		"country_code",
 		"continent",
+		"continent_code",
 		"latitude",
 		"longitude",
 		"postal",
-		"isp",
+		"calling_code",
+		"flag",
+		"emoji_flag",
+		"emoji_unicode",
 	})
 )
 
@@ -70,7 +76,6 @@ func main() {
 		select {
 		case event := <-watcher.Events:
 			// Check if the event is a modification
-			fmt.Println("Event:", event)
 			if event.Op&fsnotify.Write == fsnotify.Write {
 				readLastLine(filePath, token)
 			}
@@ -94,104 +99,112 @@ func readLastLine(filePath string, token string) {
 		lastLine = scanner.Text()
 	}
 
-	if strings.Contains(lastLine, "Failed password for") {
-		username, ip := extractIP(lastLine)
+	if strings.Contains(lastLine, "Failed password for root") || strings.Contains(lastLine, "Failed password for invalid user") {
+		username, ip := extractData(lastLine)
 		ivan := getIvan(ip, token)
 		// printf statement to print username ip and Country name
-		fmt.Printf("Username: %s, IP: %s, Country: %s\n", username, ip, ivan.Country.Name["en"])
-		recordMetrics(ivan, username, ip) // Record metrics for Prometheus
 
+		fmt.Printf("Username: %s, IP: %s, Country: %s, City: %s, Latitude: %s\n", username, ivan.IP, ivan.CountryName, ivan.City, fmt.Sprintf("%f", ivan.Latitude))
+		if ivan.IP != "" || ivan.Latitude != 0 {
+			recordMetrics(ivan, username)
+		}
 	}
-
 	if err := scanner.Err(); err != nil {
 		log.Println("Error reading file:", err)
 		return
 	}
 }
 
-func extractIP(line string) (string, string) {
-	parts := strings.Split(line, " ")
-	if strings.Contains(line, "Failed password for invalid user") {
-		return parts[10], parts[12]
+func extractData(lastLine string) (string, string) {
+	parts := strings.Split(lastLine, " ")
+	if strings.Contains(lastLine, "invalid user") {
+		return forInvalidUser(parts)
+	} else {
+		return forRootUserFail(parts)
 	}
-	return parts[8], parts[10]
+}
+func forInvalidUser(parts []string) (string, string) {
+	// find "from" in parts
+	for i, v := range parts {
+		if v == "invalid" {
+			return parts[i+2], parts[i+4]
+		}
+	}
+	return "", ""
+}
+func forRootUserFail(parts []string) (string, string) {
+	// find "root" in parts
+	for i, v := range parts {
+		if v == "root" {
+			return parts[i], parts[i+2]
+		}
+	}
+	return "", ""
 }
 
 func getIvan(ip string, token string) Ivan {
-	url := "https://api.findip.net/" + ip + "/?token=" + token
-	response, err := http.Get(url)
+	ipd, _ := ipdata.NewClient(token)
+
+	data, err := ipd.Lookup(ip)
 	if err != nil {
-		fmt.Println("Error making GET request:", err)
-		return Ivan{}
+		log.Fatal(err)
 	}
-	defer response.Body.Close()
-
-	// Read the response body
-	responseBody, err := io.ReadAll(response.Body)
-	if err != nil {
-		fmt.Println("Error reading response body:", err)
-		return Ivan{}
+	return Ivan{
+		IP:            data.IP,
+		IsEU:          data.IsEU,
+		City:          data.City,
+		Region:        data.Region,
+		RegionCode:    data.RegionCode,
+		CountryName:   data.CountryName,
+		CountryCode:   data.CountryCode,
+		ContinentName: data.ContinentName,
+		ContinentCode: data.ContinentCode,
+		Latitude:      data.Latitude,
+		Longitude:     data.Longitude,
+		Postal:        data.Postal,
+		CallingCode:   data.CallingCode,
+		Flag:          data.Flag,
+		EmojiFlag:     data.EmojiFlag,
+		EmojiUnicode:  data.EmojiUnicode,
 	}
-
-	var ivan Ivan
-
-	err = json.Unmarshal(responseBody, &ivan)
-	if err != nil {
-		fmt.Println("Error unmarshalling JSON:", err)
-		return Ivan{}
-	}
-
-	return ivan
 }
 
-func recordMetrics(ivan Ivan, username string, ip string) {
+func recordMetrics(ivan Ivan, username string) {
 	failedLogins.With(prometheus.Labels{
-		"ip":        ip,
-		"username":  username,
-		"country":   ivan.Country.Name["en"],
-		"city":      ivan.City.Names["en"],
-		"continent": ivan.Continent.Code,
-		"latitude":  fmt.Sprintf("%.6f", ivan.Location.Latitude),
-		"longitude": fmt.Sprintf("%.6f", ivan.Location.Longitude),
-		"postal":    ivan.Postal.Code,
-		"isp":       ivan.Traits.ISP,
+		"ip":             ivan.IP,
+		"username":       username,
+		"city":           ivan.City,
+		"region":         ivan.Region,
+		"region_code":    ivan.RegionCode,
+		"country":        ivan.CountryName,
+		"country_code":   ivan.CountryCode,
+		"continent":      ivan.ContinentName,
+		"continent_code": ivan.ContinentCode,
+		"latitude":       fmt.Sprintf("%f", ivan.Latitude),
+		"longitude":      fmt.Sprintf("%f", ivan.Longitude),
+		"postal":         ivan.Postal,
+		"calling_code":   ivan.CallingCode,
+		"flag":           ivan.Flag,
+		"emoji_flag":     ivan.EmojiFlag,
+		"emoji_unicode":  ivan.EmojiUnicode,
 	}).Inc()
 }
 
 type Ivan struct {
-	Country   Country   `json:"country"`
-	City      City      `json:"city"`
-	Continent Continent `json:"continent"`
-	Location  Location  `json:"location"`
-	Postal    Postal    `json:"postal"`
-	Traits    Traits    `json:"traits"`
-}
-
-type Country struct {
-	Name              map[string]string `json:"names"`
-	IsInEuropeanUnion bool              `json:"is_in_european_union"`
-	ISOCode           string            `json:"iso_code"`
-}
-
-type City struct {
-	Names map[string]string `json:"names"`
-}
-
-type Continent struct {
-	Code  string            `json:"code"`
-	Names map[string]string `json:"names"`
-}
-
-type Location struct {
-	Latitude  float64 `json:"latitude"`
-	Longitude float64 `json:"longitude"`
-	TimeZone  string  `json:"time_zone"`
-}
-
-type Postal struct {
-	Code string `json:"code"`
-}
-
-type Traits struct {
-	ISP string `json:"isp"`
+	IP            string  `json:"ip"`
+	IsEU          bool    `json:"is_eu"`
+	City          string  `json:"city"`
+	Region        string  `json:"region"`
+	RegionCode    string  `json:"region_code"`
+	CountryName   string  `json:"country_name"`
+	CountryCode   string  `json:"country_code"`
+	ContinentName string  `json:"continent_name"`
+	ContinentCode string  `json:"continent_code"`
+	Latitude      float64 `json:"latitude"`
+	Longitude     float64 `json:"longitude"`
+	Postal        string  `json:"postal"`
+	CallingCode   string  `json:"calling_code"`
+	Flag          string  `json:"flag"`
+	EmojiFlag     string  `json:"emoji_flag"`
+	EmojiUnicode  string  `json:"emoji_unicode"`
 }
