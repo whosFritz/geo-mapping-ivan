@@ -56,9 +56,10 @@ Your contributions are greatly appreciated! :rocket:
    ```
 3. Create a .env file in the project directory (recommended if u contribute to this project) and add your API token :key:
 
-   - you can get an api token from [here](https://www.findip.net/)
+   - you can get an api token from [here](https://ipdata.co/)
    - TOKEN=your_api_token_here
    - make sure the filepaths are correct
+   - if u contribute to the project also see their docs [here](https://docs.ipdata.co/docs)
 
 4. Build the project:
 
