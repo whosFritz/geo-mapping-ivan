@@ -2,7 +2,12 @@ module github.com/whosfritz/geo-mapping-ivan
 
 go 1.21.0
 
-require github.com/prometheus/client_golang v1.16.0
+require (
+	github.com/ipdata/go v0.7.2
+	github.com/prometheus/client_golang v1.16.0
+)
+
+require github.com/pkg/errors v0.9.1 // indirect
 
 require (
 	github.com/beorn7/perks v1.0.1 // indirect
