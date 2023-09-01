@@ -59,7 +59,7 @@ Your contributions are greatly appreciated! :rocket:
    - you can get an api token from [here](https://ipdata.co/)
    - TOKEN=your_api_token_here
    - make sure the filepaths are correct
-   - if u contribute to the project also see their docs [here](https://docs.ipdata.co/docs)
+   - if you're contributing to the project also see their [docs](https://docs.ipdata.co/docs) :bookmark_tabs:	
 
 4. Build the project:
 
