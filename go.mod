@@ -1,6 +1,6 @@
 module github.com/whosfritz/geo-mapping-ivan
 
-go 1.21.0
+go 1.21
 
 require (
 	github.com/ipdata/go v0.7.2
