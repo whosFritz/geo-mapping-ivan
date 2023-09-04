@@ -2,82 +2,76 @@ package main
 
 import (
 	"bufio"
+	"database/sql"
 	"fmt"
 	"log"
-	"net/http"
 	"os"
 	"strings"
 
 	"github.com/fsnotify/fsnotify"
+	_ "github.com/go-sql-driver/mysql"
 	ipdata "github.com/ipdata/go"
 	"github.com/joho/godotenv"
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promauto"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
-)
 
-var (
-	failedLogins = promauto.NewCounterVec(prometheus.CounterOpts{
-		Name: "failed_logins_total",
-		Help: "The total number of failed login attempts",
-	}, []string{
-		"ip",
-		"username",
-		"city",
-		"region",
-		"region_code",
-		"country",
-		"country_code",
-		"continent",
-		"continent_code",
-		"latitude",
-		"longitude",
-		"postal",
-		"calling_code",
-		"flag",
-		"emoji_flag",
-		"emoji_unicode",
-	})
 )
-
-func init() {
-	// Register the Prometheus HTTP handler
-	http.Handle("/metrics", promhttp.Handler())
-}
 
 func main() {
-	err := godotenv.Load("./ivan.env")
-	if err != nil {
-		log.Fatalf("Some error occured. Err: %s", err)
+	err_env := godotenv.Load("./ivan.env")
+	if err_env != nil {
+		log.Fatalf("Some error occured. Err: %s", err_env)
 	}
+
+	dbUser := os.Getenv("DB_USER")
+	dbPass := os.Getenv("DB_PASS")
+	dbName := os.Getenv("DB_NAME")
+
+	dsn := fmt.Sprintf("%s:%s@/%s", dbUser, dbPass, dbName)
+	// Open a connection to the MariaDB database
+
+	db, err_connect := sql.Open("mysql", dsn)
+
+	if err_connect != nil {
+		log.Fatalf("Error opening MariaDB connection: %v", err_connect)
+	}
+	defer db.Close()
+
+	// Ensure the database connection is alive
+	err_ping := db.Ping()
+	if err_ping != nil {
+		log.Fatalf("Error connecting to MariaDB: %v", err_ping)
+	}
+	err_createTable := createTable(db)
+	if err_createTable != nil {
+		panic(err_createTable.Error())
+	}
+	// Create the table if it doesn't exist
+
 	token := os.Getenv("TOKEN")
 	// Specify the file path you want to monitor
-	filePath := "./auth.log"
+	filePath := os.Getenv("FILE_PATH")
 
 	// Create a new watcher instance
-	watcher, err := fsnotify.NewWatcher()
-	if err != nil {
-		log.Fatal(err)
+	watcher, err_watcher := fsnotify.NewWatcher()
+	if err_watcher != nil {
+		log.Fatal(err_watcher)
 	}
 	defer watcher.Close()
 
 	// Add the file to the watcher
-	err = watcher.Add(filePath)
-	if err != nil {
-		log.Fatal(err)
+	err_addFile := watcher.Add(filePath)
+	if err_addFile != nil {
+		log.Fatal(err_addFile)
 	}
 
-	fmt.Printf("Monitoring changes to %s...\n", filePath)
-	go func() {
-		log.Fatal(http.ListenAndServe(":9101", nil))
-	}()
+	log.Printf("Monitoring changes to %s...\n", filePath)
+
 	// Start a loop to watch for events
 	for {
 		select {
 		case event := <-watcher.Events:
 			// Check if the event is a modification
 			if event.Op&fsnotify.Write == fsnotify.Write {
-				readLastLine(filePath, token)
+				readLastLine(db, filePath, token)
 			}
 		case err := <-watcher.Errors:
 			log.Println("Error:", err)
@@ -85,10 +79,10 @@ func main() {
 	}
 }
 
-func readLastLine(filePath string, token string) {
-	file, err := os.Open(filePath)
-	if err != nil {
-		log.Println("Error opening file:", err)
+func readLastLine(db *sql.DB, filePath string, token string) {
+	file, err_open := os.Open(filePath)
+	if err_open != nil {
+		log.Println("Error opening file:", err_open)
 		return
 	}
 	defer file.Close()
@@ -101,16 +95,23 @@ func readLastLine(filePath string, token string) {
 
 	if strings.Contains(lastLine, "Failed password for root") || strings.Contains(lastLine, "Failed password for invalid user") {
 		username, ip := extractData(lastLine)
+		// if ip found in table then update hitcount else insert new row
+
 		ivan := getIvan(ip, token)
 		// printf statement to print username ip and Country name
 
-		fmt.Printf("Username: %s, IP: %s, Country: %s, City: %s, Latitude: %s\n", username, ivan.IP, ivan.CountryName, ivan.City, fmt.Sprintf("%f", ivan.Latitude))
+		log.Printf("Username: %s, IP: %s, Country: %s, City: %s\n", username, ivan.IP, ivan.CountryName, ivan.City)
 		if ivan.IP != "" || ivan.Latitude != 0 {
-			recordMetrics(ivan, username)
+			username, ip := extractData(lastLine)
+
+			log.Printf("Extracted: username: %s, IP: %s\n", username, ip)
+			// Update or insert record in database
+			updateRecord(db, ip, username, token)
+			log.Println("Record updated")
 		}
 	}
-	if err := scanner.Err(); err != nil {
-		log.Println("Error reading file:", err)
+	if err_scan := scanner.Err(); err_scan != nil {
+		log.Println("Error reading file:", err_scan)
 		return
 	}
 }
@@ -145,15 +146,15 @@ func forRootUserFail(parts []string) (string, string) {
 func getIvan(ip string, token string) Ivan {
 	ipd, _ := ipdata.NewClient(token)
 
-	data, err := ipd.Lookup(ip)
-	if err != nil {
-		log.Fatal(err)
+	data, err_lookUp := ipd.Lookup(ip)
+	if err_lookUp != nil {
+		log.Fatal(err_lookUp)
 	}
 	return Ivan{
 		IP:            data.IP,
 		IsEU:          data.IsEU,
 		City:          data.City,
-		Region:        data.Region,
+		RegionName:    data.Region,
 		RegionCode:    data.RegionCode,
 		CountryName:   data.CountryName,
 		CountryCode:   data.CountryCode,
@@ -163,38 +164,55 @@ func getIvan(ip string, token string) Ivan {
 		Longitude:     data.Longitude,
 		Postal:        data.Postal,
 		CallingCode:   data.CallingCode,
-		Flag:          data.Flag,
-		EmojiFlag:     data.EmojiFlag,
-		EmojiUnicode:  data.EmojiUnicode,
 	}
 }
+func createTable(db *sql.DB) error {
+	stmt, err := db.Prepare(`CREATE TABLE IF NOT EXISTS login_attempts (
+		id INT AUTO_INCREMENT PRIMARY KEY,
+		ip VARCHAR(45) NOT NULL,
+		username VARCHAR(255) NOT NULL,
+		city VARCHAR(255),
+		region VARCHAR(255),
+		region_code VARCHAR(255),
+		country VARCHAR(255),
+		country_code VARCHAR(255),
+		continent VARCHAR(255),
+		continent_code VARCHAR(255),
+		latitude FLOAT,
+		longitude FLOAT,
+		postal VARCHAR(255),
+		calling_code VARCHAR(255),
+		hitcount INT DEFAULT 1
+    )`)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
 
-func recordMetrics(ivan Ivan, username string) {
-	failedLogins.With(prometheus.Labels{
-		"ip":             ivan.IP,
-		"username":       username,
-		"city":           ivan.City,
-		"region":         ivan.Region,
-		"region_code":    ivan.RegionCode,
-		"country":        ivan.CountryName,
-		"country_code":   ivan.CountryCode,
-		"continent":      ivan.ContinentName,
-		"continent_code": ivan.ContinentCode,
-		"latitude":       fmt.Sprintf("%f", ivan.Latitude),
-		"longitude":      fmt.Sprintf("%f", ivan.Longitude),
-		"postal":         ivan.Postal,
-		"calling_code":   ivan.CallingCode,
-		"flag":           ivan.Flag,
-		"emoji_flag":     ivan.EmojiFlag,
-		"emoji_unicode":  ivan.EmojiUnicode,
-	}).Inc()
+	res, err := stmt.Exec()
+	if err != nil {
+		return err
+	}
+
+	lastId, err := res.LastInsertId()
+	if err != nil {
+		return err
+	}
+
+	rowCnt, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	log.Printf("ID = %d, affected = %d\n", lastId, rowCnt)
+	return nil
 }
 
 type Ivan struct {
 	IP            string  `json:"ip"`
 	IsEU          bool    `json:"is_eu"`
 	City          string  `json:"city"`
-	Region        string  `json:"region"`
+	RegionName    string  `json:"region"`
 	RegionCode    string  `json:"region_code"`
 	CountryName   string  `json:"country_name"`
 	CountryCode   string  `json:"country_code"`
@@ -204,7 +222,55 @@ type Ivan struct {
 	Longitude     float64 `json:"longitude"`
 	Postal        string  `json:"postal"`
 	CallingCode   string  `json:"calling_code"`
-	Flag          string  `json:"flag"`
-	EmojiFlag     string  `json:"emoji_flag"`
-	EmojiUnicode  string  `json:"emoji_unicode"`
+}
+
+func updateRecord(db *sql.DB, ip string, username string, token string) {
+	// Check if the IP address exists in the table
+	var hitcount int
+	err := db.QueryRow("SELECT hitcount FROM login_attempts WHERE ip = ? AND username = ?", ip, username).Scan(&hitcount)
+	if err != nil && err != sql.ErrNoRows {
+		log.Fatalf("Error querying hitcount: %v", err)
+	}
+
+	if err == sql.ErrNoRows {
+		// IP address not found, insert a new record
+		stmt, err := db.Prepare(`INSERT INTO login_attempts (ip, username, city, region, region_code, country, country_code, continent, continent_code, latitude, longitude, postal, calling_code) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+		if err != nil {
+			log.Fatalf("Error preparing insert statement: %v", err)
+		}
+		defer stmt.Close()
+
+		ivan := getIvan(ip, token)
+
+		_, err = stmt.Exec(
+			ivan.IP,
+			username,
+			ivan.City,
+			ivan.RegionName,
+			ivan.RegionCode,
+			ivan.CountryName,
+			ivan.CountryCode,
+			ivan.ContinentName,
+			ivan.ContinentCode,
+			ivan.Latitude,
+			ivan.Longitude,
+			ivan.Postal,
+			ivan.CallingCode,
+		)
+		if err != nil {
+			log.Fatalf("Error inserting record: %v", err)
+		}
+	} else {
+		// IP address found, update the hit count
+		stmt, err := db.Prepare(`UPDATE login_attempts SET hitcount = ? WHERE ip = ?`)
+		if err != nil {
+			log.Fatalf("Error preparing update statement: %v", err)
+		}
+		defer stmt.Close()
+
+		_, err = stmt.Exec(hitcount+1, ip)
+		if err != nil {
+			log.Fatalf("Error updating record: %v", err)
+		}
+	}
 }

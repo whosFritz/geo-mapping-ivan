@@ -4,28 +4,31 @@
 
 ## Log Data Collection and Visualization :bar_chart:
 
-This project aims to collect log data from the `/var/log/auth.log` file, extract IP addresses and usernames from failed login attempts, and use API calls to get geographical data such as longitude, latitude, city, country, and more. The collected data is then recorded as Prometheus metrics and can be visualized using Grafana.
+This project aims to collect log data from the `/var/log/auth.log` file, extract IP addresses and usernames from failed login attempts, and use API calls to get geographical data such as longitude, latitude, city, country, and more. The collected data is then saved into MariaDB and can be visualized using Grafana.
+Old version collected to prometheus but I changed it to MariaDB because there were some bugs I couldn't fix :sweat_smile:
+Old version still avaiable in the [here](old_prometheus_way_code.go.txt).
 
-## Grafana Dashboard to use it urself :prince:	
+## Grafana Dashboard to use it urself :prince:
 
 - [Geo-Mapping-Ivan on Grafana Labs](https://grafana.com/grafana/dashboards/19450-geo-mapping-ivan/)
 - I will try to regulary update the json file on grafana labs and here in the src code :grin:
 
 ### Showcase
+
 ![Dashboard panels](screeshot2.PNG)
-
-
 
 ## Prerequisites :gear:
 
 - Go (Golang) programming language
-- Prometheus
+- MariaDB or MySQL database
 - Grafana
 - `github.com/fsnotify/fsnotify` library
-- `github.com/prometheus/client_golang/prometheus` library
-- `github.com/prometheus/client_golang/prometheus/promhttp` library
+- `github.com/fsnotify/fsnotify` library
+- `github.com/go-sql-driver/mysql` library
+- `github.com/ipdata/go` library
+- `github.com/joho/godotenv` library
 
-## Contribute :construction_worker_man:	:construction_worker_man:	
+## Contribute :construction_worker_man: :construction_worker_man:
 
 Contributions are welcome! If you'd like to contribute to this project, follow these steps:
 
@@ -50,16 +53,16 @@ Your contributions are greatly appreciated! :rocket:
 
 2. Install the required Go libraries:
    ```bash
-   go get -u github.com/fsnotify/fsnotify
-   go get -u github.com/prometheus/client_golang/prometheus
-   go get -u github.com/prometheus/client_golang/prometheus/promhttp
+   go get github.com/fsnotify/fsnotify
+   go get github.com/go-sql-driver/mysql
+   go get github.com/ipdata/go
    ```
 3. Create a .env file in the project directory (recommended if u contribute to this project) and add your API token :key:
 
    - you can get an api token from [here](https://ipdata.co/)
    - TOKEN=your_api_token_here
    - make sure the filepaths are correct
-   - if you're contributing to the project also see their [docs](https://docs.ipdata.co/docs) :bookmark_tabs:	
+   - if you're contributing to the project also see their [docs](https://docs.ipdata.co/docs) :bookmark_tabs:
 
 4. Build the project:
 
@@ -68,6 +71,8 @@ Your contributions are greatly appreciated! :rocket:
    ```
 
 ## Usage :computer:
+
+**Only for the PROMETHEUS SOLUTION**
 
 1. Edit your prometheus.yml
 
