@@ -1,3 +1,5 @@
+[![Development tests](https://github.com/whosFritz/geo-mapping-ivan/actions/workflows/go.yml/badge.svg)](https://github.com/whosFritz/geo-mapping-ivan/actions/workflows/go.yml)
+
 # GEO MAPPING IVAN :bearded_person: :world_map: :mag_right:
 
 <img src="LOGO-GEO-MAPPING-IVAN.png" alt="LOGO GEO MAPPING IVAN" width="200"/>
